@@ -1,0 +1,83 @@
+--// Cloud , Window , Camera ; management //
+
+local fg_cloud1_dur = 90
+local fg_cloud2_dur = 160
+local fg_cloud3_dur = 220
+local bg_cloud1_dur = 200
+local bg_cloud2_dur = 340
+local bg_cloud3_dur = 500
+
+local fg_clouds_1 = hash("/group_1")
+local fg_clouds_2 = hash("/group_2")
+local fg_clouds_3 = hash("/group_3")
+local bg_clouds_1 = hash("/group_4")
+local bg_clouds_2 = hash("/group_5")
+local bg_clouds_3 = hash("/group_6")
+
+local reset_pos = vmath.vector3(7500, 0, 0)
+local target_pos = vmath.vector3(-6200, 0, 0)
+local cam = "/cam_pivot#camera"
+
+local function cloud_init(self)
+
+go.animate(fg_clouds_1,"position.x", go.PLAYBACK_ONCE_FORWARD, target_pos.x , go.EASING_LINEAR, fg_cloud1_dur)
+go.animate(fg_clouds_2,"position.x", go.PLAYBACK_ONCE_FORWARD, target_pos.x , go.EASING_LINEAR, fg_cloud2_dur)
+go.animate(fg_clouds_3,"position.x", go.PLAYBACK_ONCE_FORWARD, target_pos.x , go.EASING_LINEAR, fg_cloud3_dur)
+go.animate(bg_clouds_1,"position.x", go.PLAYBACK_ONCE_FORWARD, target_pos.x , go.EASING_LINEAR, bg_cloud1_dur)
+go.animate(bg_clouds_2,"position.x", go.PLAYBACK_ONCE_FORWARD, target_pos.x , go.EASING_LINEAR, bg_cloud2_dur)
+go.animate(bg_clouds_3,"position.x", go.PLAYBACK_ONCE_FORWARD, target_pos.x , go.EASING_LINEAR, bg_cloud3_dur)
+
+end
+
+local function animate_clouds(url,duration)
+
+	go.set_position(reset_pos, url)
+	go.animate(url,"position.x", go.PLAYBACK_ONCE_FORWARD, target_pos.x , go.EASING_LINEAR, duration)
+
+end
+
+function init(self)
+	
+	msg.post("@render:", "clear_color", { color = vmath.vector4(0.59, 0.82, 1.0, 1) }) -- Set Clear Color RGBA(Background color)
+	msg.post("@render:", "use_camera_projection") -- set camera projection in render script
+	msg.post(cam, "acquire_camera_focus") -- set camera to active slot on renderer
+
+	-- start moving clouds
+	cloud_init(self)
+
+	-- this sets window event listener for window focus & resize changes.
+	window.set_listener(window_callback)
+
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("trigger_response") then
+		if message.enter then
+			if message.other_id == fg_clouds_1 then
+				animate_clouds(message.other_id, fg_cloud1_dur + 100)
+			elseif message.other_id == fg_clouds_2 then
+				animate_clouds(message.other_id, fg_cloud1_dur + 100)
+			elseif message.other_id == fg_clouds_3 then
+				animate_clouds(message.other_id, fg_cloud1_dur + 100)
+			elseif message.other_id == bg_clouds_1 then
+				animate_clouds(message.other_id, bg_cloud1_dur + 200)
+			elseif message.other_id == bg_clouds_2 then
+				animate_clouds(message.other_id, bg_cloud1_dur + 200)
+			elseif message.other_id == bg_clouds_3 then
+				animate_clouds(message.other_id, bg_cloud1_dur + 200)
+			end
+		end
+	end
+end
+
+function window_callback(self, event, data)
+
+	if event == window.WINDOW_EVENT_FOCUS_LOST then -- stop player input
+		window_event_flag = true
+		msg.post(".", "release_input_focus")
+	elseif event == window.WINDOW_EVENT_FOCUS_GAINED then -- reset player input
+		window_event_flag = false
+		msg.post(".", "acquire_input_focus")
+	end
+
+end
