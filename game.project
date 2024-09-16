@@ -10,7 +10,7 @@ width = 1280
 height = 800
 samples = 2
 update_frequency = 60
-vsync = 0
+vsync = 1
 
 [android]
 input_method = HiddenInputField
